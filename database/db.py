@@ -1,3 +1,4 @@
+import datetime
 import sqlite3
 
 from werkzeug.security import generate_password_hash
@@ -58,15 +59,21 @@ def seed_db():
     )
     user_id = cursor.lastrowid
 
+    today = datetime.date.today()
+    days = [1, 2, 4, 6, 9, 12, 15, 18]
+    dates = [
+        today.replace(day=min(day, today.day)).isoformat() for day in days
+    ]
+
     sample_expenses = [
-        (user_id, 42.50, "Food", "2026-08-02", "Groceries"),
-        (user_id, 15.00, "Transport", "2026-08-03", "Bus pass"),
-        (user_id, 120.00, "Bills", "2026-08-05", "Electricity bill"),
-        (user_id, 60.00, "Health", "2026-08-08", "Pharmacy"),
-        (user_id, 25.75, "Entertainment", "2026-08-10", "Movie tickets"),
-        (user_id, 89.99, "Shopping", "2026-08-14", "New shoes"),
-        (user_id, 10.00, "Other", "2026-08-17", "Miscellaneous"),
-        (user_id, 33.20, "Food", "2026-08-19", "Dinner out"),
+        (user_id, 42.50, "Food", dates[0], "Groceries"),
+        (user_id, 15.00, "Transport", dates[1], "Bus pass"),
+        (user_id, 120.00, "Bills", dates[2], "Electricity bill"),
+        (user_id, 60.00, "Health", dates[3], "Pharmacy"),
+        (user_id, 25.75, "Entertainment", dates[4], "Movie tickets"),
+        (user_id, 89.99, "Shopping", dates[5], "New shoes"),
+        (user_id, 10.00, "Other", dates[6], "Miscellaneous"),
+        (user_id, 33.20, "Food", dates[7], "Dinner out"),
     ]
     conn.executemany(
         """
