@@ -66,6 +66,15 @@ def get_user_by_email(email):
     return row
 
 
+def get_user_by_id(user_id):
+    conn = get_db()
+    row = conn.execute(
+        "SELECT * FROM users WHERE id = ?", (user_id,)
+    ).fetchone()
+    conn.close()
+    return row
+
+
 def seed_db():
     conn = get_db()
 
