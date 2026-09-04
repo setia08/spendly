@@ -4,15 +4,10 @@
 
 {% block content %}
 
-<section class="auth-section">
-    <div class="auth-container">
+<section class="profile-page">
+    <div class="profile-page-inner">
 
-        <div class="auth-header">
-            <h1 class="auth-title">Your profile</h1>
-            <p class="auth-subtitle">Account details for your Spendly account</p>
-        </div>
-
-        <div class="auth-card profile-card">
+        <div class="profile-card">
             <div class="profile-avatar">{{ user['name'][0] | upper }}</div>
 
             <div class="profile-field">
@@ -40,6 +35,87 @@
             </div>
         </div>
 
+        <div class="filter-bar">
+            <a href="{{ url_for('profile') }}" class="preset-btn {% if active_preset == 'all' %}active{% endif %}">All Time</a>
+            <a href="{{ url_for('profile', preset='month') }}" class="preset-btn {% if active_preset == 'month' %}active{% endif %}">This Month</a>
+            <a href="{{ url_for('profile', preset='3m') }}" class="preset-btn {% if active_preset == '3m' %}active{% endif %}">Last 3 Months</a>
+            <a href="{{ url_for('profile', preset='6m') }}" class="preset-btn {% if active_preset == '6m' %}active{% endif %}">Last 6 Months</a>
+
+            <div class="filter-divider"></div>
+
+            <form method="get" action="{{ url_for('profile') }}">
+                <input type="date" name="from" class="filter-date" value="{{ filter_from }}">
+                <span class="filter-sep">to</span>
+                <input type="date" name="to" class="filter-date" value="{{ filter_to }}">
+                <button type="submit" class="btn-apply">Apply</button>
+            </form>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Spent</div>
+                <div class="stat-value">&#8377;{{ "%.2f"|format(total_spent) }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Transactions</div>
+                <div class="stat-value">{{ transaction_count }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Top Category</div>
+                <div class="stat-value">{{ top_category or "—" }}</div>
+            </div>
+        </div>
+
+        <div class="profile-panels">
+            <div class="panel">
+                <h2 class="panel-title">Recent Transactions</h2>
+
+                {% if expenses %}
+                <table class="transactions-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Category</th>
+                            <th style="text-align: right;">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for expense in expenses %}
+                        <tr>
+                            <td>{{ expense['date'] }}</td>
+                            <td>{{ expense['description'] or '—' }}</td>
+                            <td><span class="cat-pill {{ category_accents.get(expense['category'], 'other') }}">{{ expense['category'] }}</span></td>
+                            <td class="amount">&#8377;{{ "%.2f"|format(expense['amount']) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="empty-state">No expenses in this date range.</p>
+                {% endif %}
+            </div>
+
+            <div class="panel">
+                <h2 class="panel-title">By Category</h2>
+
+                {% if category_breakdown %}
+                {% for item in category_breakdown %}
+                <div class="category-row">
+                    <div class="category-row-top">
+                        <span>{{ item.category }}</span>
+                        <span class="category-row-amount">&#8377;{{ "%.2f"|format(item.total) }}</span>
+                    </div>
+                    <div class="category-bar-track">
+                        <div class="category-bar-fill {{ item.accent }}" style="width: {{ item.percent }}%;"></div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <p class="empty-state">No expenses in this date range.</p>
+                {% endif %}
+            </div>
+        </div>
     </div>
 </section>
 
