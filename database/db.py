@@ -94,6 +94,21 @@ def get_expenses_by_user(user_id, date_from=None, date_to=None):
     return rows
 
 
+def create_expense(user_id, amount, category, date, description):
+    conn = get_db()
+    cursor = conn.execute(
+        """
+        INSERT INTO expenses (user_id, amount, category, date, description)
+        VALUES (?, ?, ?, ?, ?)
+        """,
+        (user_id, amount, category, date, description),
+    )
+    conn.commit()
+    expense_id = cursor.lastrowid
+    conn.close()
+    return expense_id
+
+
 def seed_db():
     conn = get_db()
 

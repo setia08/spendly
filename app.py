@@ -6,6 +6,7 @@ from werkzeug.security import check_password_hash
 import datetime
 
 from database.db import (
+    create_expense,
     create_user,
     get_db,
     get_expenses_by_user,
@@ -198,9 +199,59 @@ def profile():
     )
 
 
-@app.route("/expenses/add")
+@app.route("/expenses/add", methods=["GET", "POST"])
 def add_expense():
-    return "Add expense — coming in Step 7"
+    user_id = session.get("user_id")
+    if user_id is None:
+        flash("Please sign in to continue.")
+        return redirect(url_for("login"))
+
+    user = get_user_by_id(user_id)
+    if user is None:
+        session.pop("user_id", None)
+        flash("Please sign in to continue.")
+        return redirect(url_for("login"))
+
+    if request.method == "GET":
+        return render_template(
+            "add_expense.html",
+            categories=CATEGORY_ACCENTS.keys(),
+            form={"amount": "", "category": "", "date": "", "description": ""},
+        )
+
+    form = {
+        "amount": request.form.get("amount", "").strip(),
+        "category": request.form.get("category", "").strip(),
+        "date": request.form.get("date", "").strip(),
+        "description": request.form.get("description", "").strip(),
+    }
+
+    def invalid(message):
+        flash(message)
+        return render_template(
+            "add_expense.html", categories=CATEGORY_ACCENTS.keys(), form=form
+        )
+
+    try:
+        amount = float(form["amount"])
+    except ValueError:
+        return invalid("Enter a valid amount.")
+    if amount <= 0:
+        return invalid("Amount must be greater than zero.")
+
+    if form["category"] not in CATEGORY_ACCENTS:
+        return invalid("Select a valid category.")
+
+    try:
+        datetime.date.fromisoformat(form["date"])
+    except ValueError:
+        return invalid("Enter a valid date.")
+
+    create_expense(
+        user_id, amount, form["category"], form["date"], form["description"] or None
+    )
+    flash("Expense added.", "success")
+    return redirect(url_for("profile"))
 
 
 @app.route("/expenses/<int:id>/edit")
