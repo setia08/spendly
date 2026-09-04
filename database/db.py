@@ -75,6 +75,25 @@ def get_user_by_id(user_id):
     return row
 
 
+def get_expenses_by_user(user_id, date_from=None, date_to=None):
+    query = "SELECT * FROM expenses WHERE user_id = ?"
+    params = [user_id]
+
+    if date_from:
+        query += " AND date >= ?"
+        params.append(date_from)
+    if date_to:
+        query += " AND date <= ?"
+        params.append(date_to)
+
+    query += " ORDER BY date DESC, id DESC"
+
+    conn = get_db()
+    rows = conn.execute(query, params).fetchall()
+    conn.close()
+    return rows
+
+
 def seed_db():
     conn = get_db()
 
